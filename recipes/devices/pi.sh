@@ -140,7 +140,7 @@ device_chroot_tweaks_pre() {
 		[5.10.73]="1597995e94e7ba3cd8866d249e6df1cf9a790e49|master|1470"		 
 	)
 	# Version we want
-	KERNEL_VERSION="5.4.83"
+	KERNEL_VERSION="5.10.73"
 
 	# For bleeding edge, check what is the latest on offer
 	# Things *might* break, so you are warned!
@@ -373,23 +373,33 @@ device_chroot_tweaks_pre() {
 	fi
 	kernel_params+=("snd-bcm2835.enable_compat_alsa=${compat_alsa}" "snd_bcm2835.enable_hdmi=1")
 
-	if [[ $DEBUG_IMAGE == yes ]]; then
-		log "Creating debug image" "wrn"
-		log "Adding Serial Debug parameters"
-		echo "include debug.txt" >>/boot/config.txt
-		cat <<-EOF >/boot/debug.txt
-			# Enable serial console for boot debugging
+
+	echo "include debug.txt" >>/boot/config.txt
+	cat <<-EOF >/boot/debug.txt
+			#Enable serial console for boot debugging
 			enable_uart=1
 			dtoverlay=pi3-miniuart-bt
 		EOF
-		KERNEL_LOGLEVEL="loglevel=8" # KERN_DEBUG
-		log "Enabling SSH"
-		touch /boot/ssh
-		if [[ -f /boot/bootcode.bin ]]; then
-			log "Enable serial boot debug"
-			sed -i -e "s/BOOT_UART=0/BOOT_UART=1/" /boot/bootcode.bin
-		fi
-	fi
+	touch /boot/ssh
+	sed -i -e "s/BOOT_UART=0/BOOT_UART=1/" /boot/bootcode.bin
+
+	#if [[ $DEBUG_IMAGE == yes ]]; then
+	#	log "Creating debug image" "wrn"
+	#		log "Adding Serial Debug parameters"
+	#	echo "include debug.txt" >>/boot/config.txt
+	#	cat <<-EOF >/boot/debug.txt
+	#		# Enable serial console for boot debugging
+	#		enable_uart=1
+	#		dtoverlay=pi3-miniuart-bt
+	#	EOF
+	#	KERNEL_LOGLEVEL="loglevel=8" # KERN_DEBUG
+	#	log "Enabling SSH"
+	#	touch /boot/ssh
+	#	if [[ -f /boot/bootcode.bin ]]; then
+	#		log "Enable serial boot debug"
+	#		sed -i -e "s/BOOT_UART=0/BOOT_UART=1/" /boot/bootcode.bin
+	#	fi
+	#fi
 
 	kernel_params+=("${KERNEL_LOGLEVEL}")
 	log "Setting ${#kernel_params[@]} Kernel params:" "${kernel_params[*]}"
